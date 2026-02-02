@@ -25,6 +25,11 @@ const EnhancedStudentSession = () => {
   const [showResults, setShowResults] = useState(false);
   const [pollLoading, setPollLoading] = useState(false);
 
+  // New state for synchronized timer
+  const [pollEndTime, setPollEndTime] = useState(null);
+  const [clockOffset, setClockOffset] = useState(0); // Difference between server and client time
+  const [pendingReveal, setPendingReveal] = useState(null); // Store reveal data until timer hits 0
+
   const [connectionStatus, setConnectionStatus] = useState('connecting');
   const [participants, setParticipants] = useState([]);
   const [ws, setWs] = useState(null);
@@ -77,24 +82,49 @@ const EnhancedStudentSession = () => {
     };
   }, [sessionId, navigate, location]);
 
+  // Timer effect using absolute time for synchronization
   useEffect(() => {
     let timer;
-    if (timeLeft <= 0) {
-      handleTimeUp();
-    }
-    if (activePoll && timeLeft > 0 && !hasResponded) {
+    if (activePoll && pollEndTime) {
       timer = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            handleTimeUp();
-            return 0;
+        // Calculate remaining time from absolute end time, accounting for clock offset
+        const adjustedNow = Date.now() + clockOffset;
+        const remaining = Math.max(0, Math.floor((pollEndTime - adjustedNow) / 1000));
+        setTimeLeft(remaining);
+
+        if (remaining <= 0) {
+          // Time's up - show results if we have pending reveal
+          if (pendingReveal) {
+            setShowResults(true);
+            setPendingReveal(null);
           }
-          return prev - 1;
-        });
+          handleTimeUp();
+          clearInterval(timer);
+        }
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [activePoll, timeLeft, hasResponded]);
+  }, [activePoll, pollEndTime, clockOffset, pendingReveal]);
+
+  // Visibility change handler for background tabs
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && activePoll && pollEndTime) {
+        // Recalculate remaining time when tab becomes visible
+        const adjustedNow = Date.now() + clockOffset;
+        const remaining = Math.max(0, Math.floor((pollEndTime - adjustedNow) / 1000));
+        setTimeLeft(remaining);
+
+        if (remaining <= 0 && pendingReveal) {
+          setShowResults(true);
+          setPendingReveal(null);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [activePoll, pollEndTime, clockOffset, pendingReveal]);
 
   const fetchSession = async () => {
     try {
@@ -110,6 +140,44 @@ const EnhancedStudentSession = () => {
       setConnectionStatus('error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch active poll for refresh/reconnection scenarios
+  const fetchActivePoll = async () => {
+    try {
+      console.log('Checking for active poll in session:', sessionId);
+      const data = await apiRequest(`/sessions/${sessionId}/active-poll`);
+
+      if (data && data.poll_end_time && data.server_time) {
+        // Check if poll hasn't expired
+        const localNow = Date.now();
+        const offset = data.server_time - localNow;
+        const adjustedNow = localNow + offset;
+        const remaining = Math.floor((data.poll_end_time - adjustedNow) / 1000);
+
+        if (remaining > 0) {
+          console.log(`Found active poll with ${remaining}s remaining`);
+          setActivePoll(data);
+          setClockOffset(offset);
+          setPollEndTime(data.poll_end_time);
+          setTimeLeft(remaining);
+          setHasResponded(false);
+          setSelectedOption(null);
+          setShowResults(false);
+          setSubmissionResult(null);
+          setPendingReveal(null);
+        } else {
+          console.log('Active poll found but already expired');
+        }
+      }
+    } catch (error) {
+      // 404 means no active poll, which is normal
+      if (error.message && !error.message.includes('404')) {
+        console.error('Error fetching active poll:', error);
+      } else {
+        console.log('No active poll in session');
+      }
     }
   };
 
@@ -186,6 +254,12 @@ const EnhancedStudentSession = () => {
       };
       websocket.send(JSON.stringify(joinMessage));
       updateConnectionStatus('online');
+
+      // Also fetch active poll via API as a backup (for page refresh scenarios)
+      // The WebSocket join-session will also send active poll, but this is a fallback
+      setTimeout(() => {
+        fetchActivePoll();
+      }, 500); // Small delay to let WebSocket message arrive first
     };
 
     websocket.onmessage = (event) => {
@@ -194,20 +268,61 @@ const EnhancedStudentSession = () => {
 
       switch (data.type) {
         case 'poll-activated':
-          setActivePoll(data.poll);
-          setTimeLeft(data.poll.time_limit || 60);
-          setHasResponded(false);
-          setSelectedOption(null);
-          setShowResults(false);
-          setSubmissionResult(null);
+          {
+            setActivePoll(data.poll);
+            setHasResponded(false);
+            setSelectedOption(null);
+            setShowResults(false);
+            setSubmissionResult(null);
+            setPendingReveal(null);
+
+            // Calculate clock offset and set absolute end time
+            if (data.poll_end_time && data.server_time) {
+              // Calculate difference between server time and our local time
+              const localNow = Date.now();
+              const offset = data.server_time - localNow;
+              setClockOffset(offset);
+
+              // Store the absolute end time
+              setPollEndTime(data.poll_end_time);
+
+              // Calculate initial remaining time
+              const adjustedNow = localNow + offset;
+              const remaining = Math.max(0, Math.floor((data.poll_end_time - adjustedNow) / 1000));
+              setTimeLeft(remaining);
+
+              console.log(`Poll activated: end time ${new Date(data.poll_end_time).toISOString()}, remaining: ${remaining}s, clock offset: ${offset}ms`);
+            } else {
+              // Fallback for backwards compatibility
+              setTimeLeft(data.poll.time_limit || 60);
+              setPollEndTime(Date.now() + (data.poll.time_limit || 60) * 1000);
+              console.log('Poll activated (legacy mode): using time_limit directly');
+            }
+          }
           break;
         case 'poll-deactivated':
           setActivePoll(null);
+          setPollEndTime(null);
+          setPendingReveal(null);
           break;
         case 'reveal-answers':
           if (data.sessionId === sessionId) {
-            console.log('Answer reveal received, showing results');
-            setShowResults(true);
+            console.log('Answer reveal received');
+
+            // Check if timer has reached 0 or is very close
+            const adjustedNow = Date.now() + clockOffset;
+            const remaining = pollEndTime ? Math.floor((pollEndTime - adjustedNow) / 1000) : 0;
+
+            if (remaining <= 1) {
+              // Timer is at or near 0, show results immediately
+              console.log('Timer at 0, showing results immediately');
+              setShowResults(true);
+              setPendingReveal(null);
+            } else {
+              // Timer still has time, store reveal for later
+              console.log(`Timer has ${remaining}s remaining, storing pending reveal`);
+              setPendingReveal(data);
+            }
           }
           break;
         case 'participant-count-updated':
@@ -309,12 +424,12 @@ const EnhancedStudentSession = () => {
   };
 
   const handleTimeUp = () => {
-    if (!hasResponded) {
-      setHasResponded(false);
-      console.log('Time up for poll');
+    console.log('Time up for poll');
+    // If we have a pending reveal, show it now
+    if (pendingReveal) {
+      setShowResults(true);
+      setPendingReveal(null);
     }
-    setShowResults(true);
-    console.log(showResults);
   };
 
   const formatTime = (seconds) => {

@@ -14,6 +14,13 @@ const EnhancedStudentDashboard = () => {
     averageScore: 0,
     activeSessions: 0
   });
+  const [gamificationStats, setGamificationStats] = useState({
+    totalPoints: 0,
+    rank: 1,
+    totalStudents: 1,
+    currentStreak: 0,
+    badges: []
+  });
 
   const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
   useEffect(() => {
@@ -73,6 +80,20 @@ const EnhancedStudentDashboard = () => {
         averageScore: data.stats.average_score,
         activeSessions: data.stats.active_sessions
       });
+
+      // Fetch gamification stats
+      try {
+        const token = localStorage.getItem('authToken');
+        const gamificationRes = await fetch(`${API_BASE_URL}/gamification/student/${studentId}/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const gamificationData = await gamificationRes.json();
+        if (gamificationData.success) {
+          setGamificationStats(gamificationData.data);
+        }
+      } catch (gamErr) {
+        console.log('Gamification stats not available yet');
+      }
 
     } catch (error) {
       console.error('Error fetching student data:', error);
@@ -289,6 +310,47 @@ const EnhancedStudentDashboard = () => {
               <p className="text-2xl font-bold text-gray-900">{stats.activeSessions}</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Gamification Card */}
+      <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl shadow-lg p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <p className="text-4xl font-bold">{gamificationStats.totalPoints}</p>
+              <p className="text-sm opacity-90">Total Points</p>
+            </div>
+            <div className="h-12 w-px bg-white/30"></div>
+            <div className="text-center">
+              <p className="text-4xl font-bold">#{gamificationStats.rank}</p>
+              <p className="text-sm opacity-90">Your Rank</p>
+            </div>
+            <div className="h-12 w-px bg-white/30"></div>
+            <div className="text-center">
+              <p className="text-4xl font-bold">{gamificationStats.currentStreak}</p>
+              <p className="text-sm opacity-90">Current Streak</p>
+            </div>
+            {gamificationStats.badges && gamificationStats.badges.length > 0 && (
+              <>
+                <div className="h-12 w-px bg-white/30"></div>
+                <div className="flex gap-2">
+                  {gamificationStats.badges.slice(0, 3).map((badge, idx) => (
+                    <div key={idx} className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center" title={badge.name}>
+                      <span className="text-lg">{badge.type === 'first_responder' ? '1st' : badge.type === 'streak_3' ? 'Fire' : 'Medal'}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+          <button
+            onClick={() => navigate('/student/leaderboard')}
+            className="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            <span>Trophy</span>
+            View Leaderboard
+          </button>
         </div>
       </div>
 

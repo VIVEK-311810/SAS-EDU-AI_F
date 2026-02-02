@@ -11,6 +11,7 @@ import EnhancedTeacherDashboard from './components/teacher/EnhancedTeacherDashbo
 import CreateSession from './components/teacher/CreateSession';
 import EnhancedSessionManagement from './components/teacher/EnhancedSessionManagement';
 import ResourceUpload from './components/teacher/ResourceUpload';
+import TeacherAnalytics from './components/teacher/TeacherAnalytics';
 
 // Student Components
 import EnhancedStudentDashboard from './components/student/EnhancedStudentDashboard';
@@ -20,6 +21,7 @@ import SessionResources from './components/student/SessionResources';
 import AIAssistant from './components/student/AIAssistant';
 import VisitSession from './components/student/VisitSession';
 import AIResourceSearch from './components/student/AIResourceSearch';
+import Leaderboard from './components/student/Leaderboard';
 
 // Shared Components
 import Header from './components/shared/Header';
@@ -45,6 +47,7 @@ function App() {
             <Route path="/teacher/create-session" element={<CreateSession />} />
             <Route path="/teacher/session/:sessionId" element={<EnhancedSessionManagement />} />
             <Route path="/teacher/session/:sessionId/upload" element={<ResourceUpload />} />
+            <Route path="/teacher/analytics" element={<TeacherAnalytics />} />
             
             {/* Student routes */}
             <Route path="/student/dashboard" element={<EnhancedStudentDashboard />} />
@@ -54,6 +57,8 @@ function App() {
             <Route path="/student/session/:sessionId/search" element={<AIResourceSearch />} />
             <Route path="/student/ai-assistant/:sessionId" element={<AIAssistant />} />
             <Route path="/student/session/:sessionId/history" element={<VisitSession />} />
+            <Route path="/student/leaderboard" element={<Leaderboard />} />
+            <Route path="/student/leaderboard/:sessionId" element={<Leaderboard />} />
             
             {/* Shared routes */}
             <Route path="/session-history" element={<SessionHistory />} />

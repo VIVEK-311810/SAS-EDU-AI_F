@@ -1,0 +1,388 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
+import { utils } from '../../utils/api';
+
+const TeacherAnalytics = () => {
+  const navigate = useNavigate();
+  const currentUser = utils.getCurrentUser();
+
+  const [overview, setOverview] = useState(null);
+  const [pollPerformance, setPollPerformance] = useState([]);
+  const [engagementTrends, setEngagementTrends] = useState([]);
+  const [sessionAnalytics, setSessionAnalytics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTimeRange, setSelectedTimeRange] = useState(30);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== 'teacher') {
+      navigate('/auth');
+      return;
+    }
+    fetchAnalyticsData();
+  }, [selectedTimeRange]);
+
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      const headers = { 'Authorization': `Bearer ${token}` };
+      const API_URL = process.env.REACT_APP_API_URL;
+
+      const [overviewRes, pollsRes, trendsRes, sessionsRes] = await Promise.all([
+        fetch(`${API_URL}/analytics/teacher/${currentUser.id}/overview`, { headers }),
+        fetch(`${API_URL}/analytics/teacher/${currentUser.id}/poll-performance?limit=20`, { headers }),
+        fetch(`${API_URL}/analytics/teacher/${currentUser.id}/engagement-trends?days=${selectedTimeRange}`, { headers }),
+        fetch(`${API_URL}/analytics/teacher/${currentUser.id}/sessions`, { headers })
+      ]);
+
+      const [overviewData, pollsData, trendsData, sessionsData] = await Promise.all([
+        overviewRes.json(),
+        pollsRes.json(),
+        trendsRes.json(),
+        sessionsRes.json()
+      ]);
+
+      if (overviewData.success) setOverview(overviewData.data);
+      if (pollsData.success) setPollPerformance(pollsData.data);
+      if (trendsData.success) setEngagementTrends(trendsData.data);
+      if (sessionsData.success) setSessionAnalytics(sessionsData.data);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 px-6">
+        <div className="max-w-7xl mx-auto">
+          <button
+            onClick={() => navigate('/teacher/dashboard')}
+            className="mb-4 flex items-center text-white/80 hover:text-white"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </button>
+          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+          <p className="text-white/80 mt-2">Track your teaching performance and student engagement</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Time Range Selector */}
+        <div className="mb-6 flex justify-end">
+          <select
+            value={selectedTimeRange}
+            onChange={(e) => setSelectedTimeRange(parseInt(e.target.value))}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={7}>Last 7 days</option>
+            <option value={30}>Last 30 days</option>
+            <option value={90}>Last 90 days</option>
+          </select>
+        </div>
+
+        {/* Overview Cards */}
+        {overview && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-blue-100">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Total Sessions</p>
+                  <p className="text-2xl font-bold text-gray-900">{overview.totalSessions}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-green-100">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Total Polls</p>
+                  <p className="text-2xl font-bold text-gray-900">{overview.totalPolls}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-purple-100">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Total Students</p>
+                  <p className="text-2xl font-bold text-gray-900">{overview.totalStudents}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-yellow-100">
+                  <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Response Rate</p>
+                  <p className="text-2xl font-bold text-gray-900">{overview.avgResponseRate}%</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-emerald-100">
+                  <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Avg Accuracy</p>
+                  <p className="text-2xl font-bold text-gray-900">{overview.avgCorrectRate}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="border-b border-gray-200 mb-6">
+          <nav className="flex space-x-8">
+            {['overview', 'polls', 'sessions'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
+                  activeTab === tab
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                {tab === 'overview' ? 'Engagement Trends' : tab}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Engagement Trends Chart */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Engagement Over Time</h3>
+              {engagementTrends.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={engagementTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis />
+                    <Tooltip
+                      labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    />
+                    <Legend />
+                    <Line type="monotone" dataKey="responsesReceived" name="Responses" stroke="#3B82F6" strokeWidth={2} />
+                    <Line type="monotone" dataKey="pollsCreated" name="Polls" stroke="#10B981" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  No data available for the selected time range
+                </div>
+              )}
+            </div>
+
+            {/* Accuracy Trend */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Accuracy Trend</h3>
+              {engagementTrends.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={engagementTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    />
+                    <YAxis domain={[0, 100]} />
+                    <Tooltip
+                      labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                      formatter={(value) => [`${value}%`, 'Accuracy']}
+                    />
+                    <Line type="monotone" dataKey="avgAccuracy" name="Avg Accuracy" stroke="#8B5CF6" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">
+                  No data available for the selected time range
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'polls' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Poll Performance (Last 20 Polls)</h3>
+            {pollPerformance.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={pollPerformance.slice(0, 10)} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" domain={[0, 100]} />
+                    <YAxis
+                      type="category"
+                      dataKey="question"
+                      width={200}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <Tooltip formatter={(value) => [`${value}%`, 'Accuracy']} />
+                    <Bar dataKey="accuracyRate" name="Accuracy Rate" fill="#3B82F6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+
+                <div className="mt-6 overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responses</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Accuracy</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Time</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {pollPerformance.map((poll) => (
+                        <tr key={poll.pollId}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{poll.question}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{poll.sessionTitle}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {poll.correctResponses}/{poll.totalResponses}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              poll.accuracyRate >= 70 ? 'bg-green-100 text-green-800' :
+                              poll.accuracyRate >= 40 ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {poll.accuracyRate}%
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{poll.avgResponseTimeSec}s</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                No polls created yet
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'sessions' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Performance</h3>
+            {sessionAnalytics.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Polls</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participants</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responses</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Accuracy</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {sessionAnalytics.map((session) => (
+                      <tr key={session.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{session.title}</div>
+                          <div className="text-sm text-gray-500">{session.courseName}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-blue-600">{session.sessionId}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            session.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {session.isActive ? 'Active' : 'Ended'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{session.pollCount}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{session.participantCount}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{session.totalResponses}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            session.avgAccuracy >= 70 ? 'bg-green-100 text-green-800' :
+                            session.avgAccuracy >= 40 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {session.avgAccuracy}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(session.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                No sessions created yet
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default TeacherAnalytics;
