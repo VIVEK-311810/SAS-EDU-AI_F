@@ -34,16 +34,16 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
   }, [transcripts]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
-      <div className="border-b pb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Audio Transcription</h2>
-        <p className="text-gray-600 text-sm mt-1">Record and transcribe class audio in real-time</p>
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="border-b pb-3 sm:pb-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Audio Transcription</h2>
+        <p className="text-gray-600 text-xs sm:text-sm mt-1">Record and transcribe class audio in real-time</p>
       </div>
 
       {/* Status Badge */}
-      <div className="flex items-center space-x-4">
-        <span className="text-gray-700 font-semibold">Status:</span>
-        <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+      <div className="flex items-center space-x-3 sm:space-x-4">
+        <span className="text-gray-700 font-semibold text-sm sm:text-base">Status:</span>
+        <span className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold ${
           status === 'idle' ? 'bg-gray-200 text-gray-700' :
           status === 'recording' ? 'bg-green-500 text-white animate-pulse' :
           'bg-yellow-500 text-white'
@@ -53,9 +53,9 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
       </div>
 
       {/* Session Configuration */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
             Session ID *
           </label>
           <input
@@ -64,47 +64,47 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
             onChange={(e) => setSessionId(e.target.value)}
             disabled={status !== 'idle' || propSessionId}
             placeholder="Enter unique session ID"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm sm:text-base"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
             PDF File (Optional)
           </label>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <input
               id="pdf-input"
               type="file"
               accept="application/pdf"
               onChange={handlePdfChange}
               disabled={status !== 'idle'}
-              className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 text-xs sm:text-sm text-gray-500 file:mr-2 sm:file:mr-4 file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {pdfFile && (
               <button
                 onClick={clearPdf}
                 disabled={status !== 'idle'}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="w-full sm:w-auto px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 active:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 Clear
               </button>
             )}
           </div>
           {pdfFile && (
-            <p className="text-sm text-green-600 mt-1">✓ {pdfFile.name}</p>
+            <p className="text-xs sm:text-sm text-green-600 mt-1 truncate">✓ {pdfFile.name}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
             Segment Interval (minutes)
           </label>
           <select
             value={segmentInterval}
             onChange={(e) => setSegmentInterval(parseInt(e.target.value))}
             disabled={status !== 'idle'}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm sm:text-base"
           >
             {intervalOptions.map(interval => (
               <option key={interval} value={interval}>
@@ -113,17 +113,17 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
             ))}
           </select>
           <p className="text-xs text-gray-500 mt-1">
-            Transcripts will be sent to webhook every {segmentInterval} minute{segmentInterval > 1 ? 's' : ''}
+            Transcripts sent every {segmentInterval} min
           </p>
         </div>
       </div>
 
       {/* Control Buttons */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <button
           onClick={startRecording}
           disabled={status !== 'idle' || !sessionId.trim() || isProcessing}
-          className="px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 active:bg-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
         >
           Start
         </button>
@@ -131,7 +131,7 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
         <button
           onClick={status === 'paused' ? resumeRecording : pauseRecording}
           disabled={status === 'idle' || isProcessing}
-          className="px-6 py-3 bg-yellow-500 text-white rounded-lg font-bold hover:bg-yellow-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="px-4 sm:px-6 py-2.5 sm:py-3 bg-yellow-500 text-white rounded-lg font-bold hover:bg-yellow-600 active:bg-yellow-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
         >
           {status === 'paused' ? 'Resume' : 'Pause'}
         </button>
@@ -139,7 +139,7 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
         <button
           onClick={stopRecording}
           disabled={status === 'idle' || isProcessing}
-          className="px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="px-4 sm:px-6 py-2.5 sm:py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 active:bg-red-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
         >
           Stop
         </button>
@@ -147,23 +147,23 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
         <button
           onClick={generateNotes}
           disabled={status === 'idle' || isProcessing}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
         >
-          📝 Generate Notes
+          📝 Notes
         </button>
       </div>
 
       {/* Real-time Transcript Display */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Live Transcript</h3>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-64 overflow-y-auto">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Live Transcript</h3>
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4 h-48 sm:h-64 overflow-y-auto">
           {transcripts.length === 0 ? (
-            <p className="text-gray-400 text-center italic">Transcripts will appear here...</p>
+            <p className="text-gray-400 text-center italic text-sm">Transcripts will appear here...</p>
           ) : (
             <div className="space-y-2">
               {transcripts.map((transcript, index) => (
-                <div key={index} className="bg-white p-3 rounded border border-gray-200">
-                  <p className="text-gray-800">{transcript.text}</p>
+                <div key={index} className="bg-white p-2 sm:p-3 rounded border border-gray-200">
+                  <p className="text-gray-800 text-sm sm:text-base">{transcript.text}</p>
                   <p className="text-xs text-gray-500 mt-1">
                     {transcript.timestamp.toLocaleTimeString()}
                     {transcript.language && ` • ${transcript.language}`}
@@ -178,32 +178,32 @@ const AudioRecorder = ({ audioRecorder, sessionId: propSessionId }) => {
 
       {/* Manual Notes Section */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Manual Notes</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">Manual Notes</h3>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Write additional notes here..."
           disabled={isProcessing}
-          rows={4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+          rows={3}
+          className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none text-sm sm:text-base"
         />
         <button
           onClick={sendManualNotes}
           disabled={!notes.trim() || isProcessing}
-          className="mt-2 px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="mt-2 w-full sm:w-auto px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
         >
           Send Notes
         </button>
       </div>
 
       {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-semibold text-blue-900 mb-2">ℹ️ How it works:</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Audio is recorded in 5-second chunks and transcribed by GPU server</li>
-          <li>• Transcripts accumulate and are sent to webhook every {segmentInterval} minute{segmentInterval > 1 ? 's' : ''}</li>
-          <li>• Use "Generate Notes" to send complete transcript anytime during session</li>
-          <li>• Manual notes are sent immediately via separate webhook</li>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+        <h4 className="font-semibold text-blue-900 mb-2 text-sm sm:text-base">ℹ️ How it works:</h4>
+        <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
+          <li>• Audio recorded in 5s chunks, transcribed by GPU</li>
+          <li>• Transcripts sent every {segmentInterval} min</li>
+          <li>• "Notes" sends complete transcript anytime</li>
+          <li>• Manual notes sent immediately</li>
         </ul>
       </div>
     </div>

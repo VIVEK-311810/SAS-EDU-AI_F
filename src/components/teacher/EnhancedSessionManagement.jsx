@@ -364,33 +364,33 @@ const EnhancedSessionManagement = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-4 sm:space-y-6">
       {/* Session Header */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{session.title}</h1>
-            <p className="text-gray-600 mt-1">{session.course_name}</p>
-            <p className="text-sm text-gray-500 mt-2">{session.description}</p>
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{session.title}</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">{session.course_name}</p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2 line-clamp-2">{session.description}</p>
           </div>
-          <div className="text-right">
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{session.session_id}</div>
-                <div className="text-sm text-gray-500">Session ID</div>
+          <div className="w-full sm:w-auto">
+            <div className="grid grid-cols-3 sm:flex sm:items-center gap-2 sm:gap-4">
+              <div className="text-center p-2 bg-blue-50 rounded-lg sm:bg-transparent sm:p-0">
+                <div className="text-lg sm:text-2xl font-bold text-blue-600">{session.session_id}</div>
+                <div className="text-xs sm:text-sm text-gray-500">Session ID</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{participants.filter(p => p.is_active).length}</div>
-                <div className="text-sm text-gray-500">Participants</div>
+              <div className="text-center p-2 bg-green-50 rounded-lg sm:bg-transparent sm:p-0">
+                <div className="text-lg sm:text-2xl font-bold text-green-600">{participants.filter(p => p.is_active).length}</div>
+                <div className="text-xs sm:text-sm text-gray-500">Active</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">{polls.length}</div>
-                <div className="text-sm text-gray-500">Polls</div>
+              <div className="text-center p-2 bg-purple-50 rounded-lg sm:bg-transparent sm:p-0">
+                <div className="text-lg sm:text-2xl font-bold text-purple-600">{polls.length}</div>
+                <div className="text-xs sm:text-sm text-gray-500">Polls</div>
               </div>
-              <div className="text-center">
-                <div className={`text-sm font-medium ${wsConnected ? 'text-green-600' : 'text-red-600'}`}>
-                  WebSocket: {wsConnected ? '🟢 Connected' : '🔴 Disconnected'}
-                </div>
+            </div>
+            <div className="mt-2 text-center sm:text-right">
+              <div className={`text-xs sm:text-sm font-medium ${wsConnected ? 'text-green-600' : 'text-red-600'}`}>
+                {wsConnected ? '🟢 Connected' : '🔴 Disconnected'}
               </div>
             </div>
           </div>
@@ -399,17 +399,17 @@ const EnhancedSessionManagement = () => {
 
       {/* Active Poll Alert */}
       {activePoll && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center min-w-0">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              <span className="text-green-800 font-medium">Active Poll: {activePoll.question}</span>
+              <span className="text-green-800 font-medium text-sm sm:text-base truncate">Active: {activePoll.question}</span>
             </div>
             <button
               onClick={() => handleDeactivatePoll(activePoll.id)}
-              className="text-green-600 hover:text-green-800 font-medium"
+              className="text-green-600 hover:text-green-800 active:text-green-900 font-medium text-sm py-1 self-end sm:self-auto"
             >
               End Poll
             </button>
@@ -419,19 +419,19 @@ const EnhancedSessionManagement = () => {
 
       {/* WebSocket Status Alert */}
       {!wsConnected && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
+          <div className="flex items-start sm:items-center">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5 sm:mt-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
-            <span className="text-yellow-800 font-medium">WebSocket Disconnected - Real-time features may not work. Attempting to reconnect...</span>
+            <span className="text-yellow-800 font-medium text-xs sm:text-sm">WebSocket Disconnected - Real-time features may not work. Reconnecting...</span>
           </div>
         </div>
       )}
 
       {/* Activity Status Bar */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200 rounded-lg p-4 shadow-sm">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-gray-200 rounded-lg p-3 sm:p-4 shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
           {/* Recording Status */}
           <div className="flex items-center space-x-2">
             {audioRecorder.status === 'recording' ? (
@@ -494,7 +494,7 @@ const EnhancedSessionManagement = () => {
       {/* Tab Navigation */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6 overflow-x-auto">
+          <nav className="flex space-x-2 sm:space-x-4 px-3 sm:px-6 overflow-x-auto scrollbar-hide">
             {[
               { id: 'overview', name: 'Overview', icon: '📊' },
               {
@@ -518,7 +518,7 @@ const EnhancedSessionManagement = () => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                className={`relative py-4 px-2 border-b-2 font-medium text-sm ${
+                className={`relative py-3 sm:py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -528,10 +528,11 @@ const EnhancedSessionManagement = () => {
                   if (tab.id === 'generated-mcqs') setNewMCQsCount(0);
                 }}
               >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.name}
+                <span className="mr-1 sm:mr-2">{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.name}</span>
+                <span className="sm:hidden">{tab.name.split(' ')[0]}</span>
                 {tab.badge && (
-                  <span className={`ml-2 ${tab.badgeColor} text-white text-xs font-bold px-2 py-0.5 rounded-full ${activityPulse && tab.id === 'generated-mcqs' ? 'animate-pulse' : ''}`}>
+                  <span className={`ml-1 sm:ml-2 ${tab.badgeColor} text-white text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full ${activityPulse && tab.id === 'generated-mcqs' ? 'animate-pulse' : ''}`}>
                     {tab.badge}
                   </span>
                 )}
@@ -540,39 +541,39 @@ const EnhancedSessionManagement = () => {
           </nav>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-900 mb-2">Session Status</h3>
-                  <p className="text-blue-700">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+                <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
+                  <h3 className="font-semibold text-blue-900 mb-1 sm:mb-2 text-sm sm:text-base">Session Status</h3>
+                  <p className="text-blue-700 text-sm sm:text-base">
                     {session.is_active ? '🟢 Active' : '🔴 Inactive'}
                   </p>
                 </div>
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-green-900 mb-2">Participants</h3>
-                  <p className="text-green-700">{participants.length} students joined</p>
+                <div className="bg-green-50 rounded-lg p-3 sm:p-4">
+                  <h3 className="font-semibold text-green-900 mb-1 sm:mb-2 text-sm sm:text-base">Participants</h3>
+                  <p className="text-green-700 text-sm sm:text-base">{participants.length} students joined</p>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-purple-900 mb-2">Generated MCQs</h3>
-                  <p className="text-purple-700">{generatedMCQs.length} available</p>
+                <div className="bg-purple-50 rounded-lg p-3 sm:p-4">
+                  <h3 className="font-semibold text-purple-900 mb-1 sm:mb-2 text-sm sm:text-base">Generated MCQs</h3>
+                  <p className="text-purple-700 text-sm sm:text-base">{generatedMCQs.length} available</p>
                 </div>
               </div>
-              
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">Quick Actions</h3>
-                <div className="flex space-x-4">
+
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Quick Actions</h3>
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                   <button
                     onClick={() => setActiveTab('polls')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                    className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-4 py-2.5 sm:py-2 rounded-lg text-sm sm:text-base"
                   >
                     Create Poll
                   </button>
                   <button
                     onClick={() => setActiveTab('generated-mcqs')}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-4 py-2.5 sm:py-2 rounded-lg text-sm sm:text-base"
                   >
                     Send MCQs
                   </button>
@@ -598,10 +599,10 @@ const EnhancedSessionManagement = () => {
 
           {/* Polls Tab */}
           {activeTab === 'polls' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Create New Poll Form */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Create New Poll</h3>
+              <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Create New Poll</h3>
                 <form onSubmit={handleCreatePoll} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -610,7 +611,7 @@ const EnhancedSessionManagement = () => {
                     <textarea
                       value={newPoll.question}
                       onChange={(e) => setNewPoll({ ...newPoll, question: e.target.value })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                       rows="3"
                       placeholder="Enter your poll question..."
                       required
@@ -628,24 +629,24 @@ const EnhancedSessionManagement = () => {
                           name="correctAnswer"
                           checked={newPoll.correctAnswer === index}
                           onChange={() => setNewPoll({ ...newPoll, correctAnswer: index })}
-                          className="text-blue-600"
+                          className="text-blue-600 w-4 h-4"
                         />
                         <input
                           type="text"
                           value={option}
                           onChange={(e) => updatePollOption(index, e.target.value)}
-                          className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                           placeholder={`Option ${index + 1}`}
                           required={index < 2}
                         />
                       </div>
                     ))}
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Select the correct answer by clicking the radio button
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Justification
@@ -653,7 +654,7 @@ const EnhancedSessionManagement = () => {
                       <textarea
                         value={newPoll.justification}
                         onChange={(e) => setNewPoll({ ...newPoll, justification: e.target.value })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                         rows="2"
                         placeholder="Explain why this is the correct answer..."
                       />
@@ -666,7 +667,7 @@ const EnhancedSessionManagement = () => {
                         type="number"
                         value={newPoll.timeLimit}
                         onChange={(e) => setNewPoll({ ...newPoll, timeLimit: parseInt(e.target.value) })}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full p-2.5 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                         min="10"
                         max="300"
                       />
@@ -675,7 +676,7 @@ const EnhancedSessionManagement = () => {
 
                   <button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium"
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base"
                   >
                     Create Poll
                   </button>
@@ -816,24 +817,24 @@ const EnhancedSessionManagement = () => {
 
           {/* Analytics Tab */}
           {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Session Analytics</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 mb-2">Total Participants</h4>
-                  <p className="text-2xl font-bold text-blue-700">{participants.length}</p>
+            <div className="space-y-4 sm:space-y-6">
+              <h3 className="text-base sm:text-lg font-semibold">Session Analytics</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
+                <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
+                  <h4 className="font-semibold text-blue-900 mb-1 sm:mb-2 text-xs sm:text-sm">Participants</h4>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-700">{participants.length}</p>
                 </div>
-                <div className="bg-green-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-green-900 mb-2">Active Polls</h4>
-                  <p className="text-2xl font-bold text-green-700">{polls.filter(p => p.isActive).length}</p>
+                <div className="bg-green-50 rounded-lg p-3 sm:p-4">
+                  <h4 className="font-semibold text-green-900 mb-1 sm:mb-2 text-xs sm:text-sm">Active Polls</h4>
+                  <p className="text-xl sm:text-2xl font-bold text-green-700">{polls.filter(p => p.isActive).length}</p>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-purple-900 mb-2">Total Polls</h4>
-                  <p className="text-2xl font-bold text-purple-700">{polls.length}</p>
+                <div className="bg-purple-50 rounded-lg p-3 sm:p-4">
+                  <h4 className="font-semibold text-purple-900 mb-1 sm:mb-2 text-xs sm:text-sm">Total Polls</h4>
+                  <p className="text-xl sm:text-2xl font-bold text-purple-700">{polls.length}</p>
                 </div>
-                <div className="bg-orange-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-orange-900 mb-2">Generated MCQs</h4>
-                  <p className="text-2xl font-bold text-orange-700">{generatedMCQs.length}</p>
+                <div className="bg-orange-50 rounded-lg p-3 sm:p-4">
+                  <h4 className="font-semibold text-orange-900 mb-1 sm:mb-2 text-xs sm:text-sm">MCQs</h4>
+                  <p className="text-xl sm:text-2xl font-bold text-orange-700">{generatedMCQs.length}</p>
                 </div>
               </div>
               
@@ -898,8 +899,8 @@ const EnhancedSessionManagement = () => {
 
       {/* Edit MCQ Modal */}
       {showEditModal && editingMCQ && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Edit MCQ</h3>
             
             <div className="space-y-4">
