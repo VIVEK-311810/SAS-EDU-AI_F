@@ -7,7 +7,6 @@ const EnhancedStudentDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [joinedSessions, setJoinedSessions] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
   const [stats, setStats] = useState({
     sessionsJoined: 0,
     pollsAnswered: 0,
@@ -66,14 +65,6 @@ const EnhancedStudentDashboard = () => {
         last_poll: null // Will be populated if needed
       })));
 
-      setRecentActivity(data.recentActivity.map((activity, index) => ({
-        id: index + 1,
-        type: activity.activity_type,
-        title: activity.title,
-        time: formatTimeAgo(activity.activity_time),
-        score: activity.result
-      })));
-
       setStats({
         sessionsJoined: data.stats.sessions_joined,
         pollsAnswered: data.stats.polls_answered,
@@ -99,7 +90,6 @@ const EnhancedStudentDashboard = () => {
       console.error('Error fetching student data:', error);
       // Set empty data on error
       setJoinedSessions([]);
-      setRecentActivity([]);
       setStats({
         sessionsJoined: 0,
         pollsAnswered: 0,
@@ -110,33 +100,6 @@ const EnhancedStudentDashboard = () => {
       setLoading(false);
     }
   };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatTimeAgo = (dateString) => {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffInSeconds = Math.floor((now - date) / 1000);
-
-    if (diffInSeconds < 60) {
-      return `${diffInSeconds} seconds ago`;
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    }
-  };
-
 
   async function rejoinSession(sessionId, studentId) {
     
@@ -161,35 +124,6 @@ const EnhancedStudentDashboard = () => {
   }
 
 
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case 'poll_answered':
-        return (
-          <div className="p-2 rounded-full bg-green-100">
-            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-        );
-      case 'session_joined':
-        return (
-          <div className="p-2 rounded-full bg-blue-100">
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-          </div>
-        );
-      default:
-        return (
-          <div className="p-2 rounded-full bg-gray-100">
-            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-        );
-    }
-  };
-
   if (loading) {
     return <LoadingSpinner text="Loading your dashboard..." />;
   }
@@ -209,42 +143,6 @@ const EnhancedStudentDashboard = () => {
             className="bg-white text-green-600 hover:bg-green-50 font-medium py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 shadow-lg text-center w-full sm:w-auto"
           >
             + Join Session
-          </button>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 sm:p-6">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => navigate('/session-history')}
-            className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-          >
-            <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="text-left min-w-0">
-              <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">History</h3>
-              <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Past sessions</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => navigate('/student/join')}
-            className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-          >
-            <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            <div className="text-left min-w-0">
-              <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">Join</h3>
-              <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Enter code</p>
-            </div>
           </button>
         </div>
       </div>
@@ -334,10 +232,8 @@ const EnhancedStudentDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-        {/* Active Sessions */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-md border border-gray-200">
+      {/* Your Sessions */}
+      <div className="bg-white rounded-xl shadow-md border border-gray-200">
             <div className="p-4 sm:p-6 border-b border-gray-200">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900">Your Sessions</h2>
               <p className="text-gray-600 mt-1 text-sm">Sessions you've joined</p>
@@ -429,84 +325,6 @@ const EnhancedStudentDashboard = () => {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Recent Activity & Quick Actions */}
-        <div className="space-y-4 sm:space-y-6">
-          {/* Quick Actions - Hidden on mobile since we have them above */}
-          <div className="hidden lg:block bg-white rounded-xl p-4 sm:p-6 shadow-md border border-gray-200">
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <button
-                onClick={() => navigate('/student/join')}
-                className="w-full flex items-center p-3 border border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors duration-200"
-              >
-                <svg className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <div className="text-left">
-                  <p className="font-medium text-gray-900 text-sm">Join Session</p>
-                  <p className="text-xs text-gray-500">Enter session ID</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => {
-                  const activeSession = joinedSessions.find(s => s.is_active);
-                  if (activeSession) {
-                    navigate(`/student/session/${activeSession.session_id}`);
-                  }
-                }}
-                className="w-full flex items-center p-3 border border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors duration-200"
-              >
-                <svg className="w-5 h-5 text-gray-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <div className="text-left">
-                  <p className="font-medium text-gray-900">Continue Session</p>
-                  <p className="text-sm text-gray-500">Resume active session</p>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-white rounded-lg p-6 shadow-md border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
-              <button
-                onClick={fetchStudentData}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200"
-                disabled={loading}
-              >
-                {loading ? 'Refreshing...' : 'Refresh'}
-              </button>
-            </div>
-            {recentActivity.length === 0 ? (
-              <p className="text-gray-500 text-sm">No recent activity</p>
-            ) : (
-              <div className="space-y-4">
-                {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3">
-                    {getActivityIcon(activity.type)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <p className="text-xs text-gray-500">{activity.time}</p>
-                        {activity.score && (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                            {activity.score}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
