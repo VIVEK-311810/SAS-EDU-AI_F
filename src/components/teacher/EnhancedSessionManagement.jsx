@@ -13,6 +13,12 @@ const WS_BASE_URL = process.env.REACT_APP_API_URL ?
 
 const EnhancedSessionManagement = () => {
   const { sessionId } = useParams();
+
+  // Helper to safely compare session IDs (guards against nullish values)
+  const isCurrentSession = (dataSessionId) => {
+    if (!sessionId || !dataSessionId) return false;
+    return dataSessionId.toUpperCase() === sessionId.toUpperCase();
+  };
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -118,7 +124,7 @@ const EnhancedSessionManagement = () => {
             fetchPolls(); // Refresh polls to see active status
             break;
           case 'transcript-segment-sent':
-            if (data.sessionId?.toUpperCase() === sessionId?.toUpperCase()) {
+            if (isCurrentSession(data.sessionId)) {
               console.log('Transcript segment sent notification received:', data);
               setLastSegmentTime(new Date(data.timestamp));
               setSegmentCount(prev => prev + 1);
@@ -127,7 +133,7 @@ const EnhancedSessionManagement = () => {
             }
             break;
           case 'mcqs-generated':
-            if (data.sessionId?.toUpperCase() === sessionId?.toUpperCase()) {
+            if (isCurrentSession(data.sessionId)) {
               console.log('MCQs generated notification received:', data);
               setNewMCQsCount(prev => prev + data.count);
               setActivityPulse(true);
@@ -136,7 +142,7 @@ const EnhancedSessionManagement = () => {
             }
             break;
           case 'mcqs-sent':
-            if (data.sessionId?.toUpperCase() === sessionId?.toUpperCase()) {
+            if (isCurrentSession(data.sessionId)) {
               fetchGeneratedMCQs();
               fetchPolls();
             }

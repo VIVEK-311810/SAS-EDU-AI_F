@@ -306,7 +306,7 @@ const EnhancedStudentSession = () => {
           setPendingReveal(null);
           break;
         case 'reveal-answers':
-          if (data.sessionId?.toUpperCase() === sessionId?.toUpperCase()) {
+          if (data.sessionId && sessionId && data.sessionId.toUpperCase() === sessionId.toUpperCase()) {
             console.log('Answer reveal received');
 
             // Check if timer has reached 0 or is very close

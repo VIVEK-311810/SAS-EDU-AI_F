@@ -48,7 +48,7 @@ const useAudioRecorder = (initialSessionId = '') => {
       try {
         const data = JSON.parse(event.data);
 
-        if (data.type === 'transcript-received' && data.session_id?.toUpperCase() === sessionId?.toUpperCase()) {
+        if (data.type === 'transcript-received' && data.session_id && sessionId && data.session_id.toUpperCase() === sessionId.toUpperCase()) {
           console.log('[useAudioRecorder] Transcript received:', data.transcript);
 
           const newTranscript = {
